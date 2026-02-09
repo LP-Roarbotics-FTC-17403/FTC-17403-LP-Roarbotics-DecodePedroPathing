@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.pedroPathing;
 
+import com.pedropathing.control.FilteredPIDFCoefficients;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
@@ -19,7 +20,8 @@ public class Constants {
             .forwardZeroPowerAcceleration(-29.595118857082788)
             .lateralZeroPowerAcceleration(-58.82832994756568)
             .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0.02))
-            .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0, 0.02));
+            .headingPIDFCoefficients(new PIDFCoefficients(1, 0, 0, 0.02))
+            .drivePIDFCoefficients(new FilteredPIDFCoefficients(0.007,0, 0.0000001, 0.6, 0.01));
 
     public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
