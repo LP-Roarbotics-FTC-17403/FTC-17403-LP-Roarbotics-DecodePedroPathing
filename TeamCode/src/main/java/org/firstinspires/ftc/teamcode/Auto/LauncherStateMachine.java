@@ -21,11 +21,17 @@ public class LauncherStateMachine {
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
 
-    private double launchTime = 0.8;
+    private int tagNumber = 21;
+    private double launchTime = 0.6;
 
-    private double gapBetweenLaunch = 0;
-    private double maxTimeForSpinUp = 2;
+    private double longTime = 0.7;
+    private double shortime = 0.3;
+
+    private double gapBetweenLaunch = 0.3;
+    private double maxTimeForSpinUp = 0.4;
     private int launchRemaining = 0;
+
+
 
     private String[] side;
     public static final double ON               = 1.0;
@@ -35,6 +41,9 @@ public class LauncherStateMachine {
 
     final double LAUNCHER_FAR_TARGET_VELOCITY = 1350; //Target velocity for far goal
     final double LAUNCHER_FAR_MIN_VELOCITY = 1325; //minimum required to start a shot for far goal.
+
+    double desiredTargetVelocity = 1140;
+    double desiredMinVelocity = 1120;
 
     private ElapsedTime stateTimer = new ElapsedTime();
 
@@ -54,7 +63,7 @@ public class LauncherStateMachine {
         transfer = hardwareMap.get(DcMotorEx.class, "transfer");
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
-
+        leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
         leftLauncher.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftLauncher.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         leftLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
@@ -73,30 +82,32 @@ public class LauncherStateMachine {
     public void update(){
         switch(launcherState){
             case IDLE:
+                leftLauncher.setVelocity(desiredTargetVelocity);
+                rightLauncher.setVelocity(desiredTargetVelocity);
                 if(launchRemaining > 0){
                     //move the set velocity outside of if statement if needed
-                    leftLauncher.setVelocity(LAUNCHER_CLOSE_TARGET_VELOCITY);
-                    rightLauncher.setVelocity(LAUNCHER_CLOSE_TARGET_VELOCITY);
+                    leftLauncher.setVelocity(desiredTargetVelocity);
+                    rightLauncher.setVelocity(desiredTargetVelocity);
                     stateTimer.reset();
                     launcherState = LauncherState.SPIN_UP;
                 }
                 break;
             case SPIN_UP:
-                if(side[launchRemaining-1].equals("left")){
-                    if(leftLauncher.getVelocity() > LAUNCHER_CLOSE_MIN_VELOCITY || stateTimer.seconds() > maxTimeForSpinUp){
+                if(side[launchRemaining-1].equals("right")){ //changed direction
+                    if(leftLauncher.getVelocity() > desiredMinVelocity || stateTimer.seconds() > maxTimeForSpinUp){
                         leftFeeder.setPower(ON);
                         stateTimer.reset();
-                        launcherState = LauncherState.LEFTLAUNCH;
+                        launcherState = LauncherState.LEFTLAUNCH; // changed opposite
                     }
-                }else if(side[launchRemaining-1].equals("right")){
-                    if(rightLauncher.getVelocity() > LAUNCHER_CLOSE_MIN_VELOCITY || stateTimer.seconds() > maxTimeForSpinUp){
+                }else if(side[launchRemaining-1].equals("left")){
+                    if(rightLauncher.getVelocity() > desiredMinVelocity || stateTimer.seconds() > maxTimeForSpinUp){
                         rightFeeder.setPower(ON);
                         stateTimer.reset();
-                        launcherState = LauncherState.RIGHTLAUNCH;
+                        launcherState = LauncherState.RIGHTLAUNCH; // changed opposite
                     }
                 }else{
                     //both
-                    if(rightLauncher.getVelocity() > LAUNCHER_CLOSE_MIN_VELOCITY || stateTimer.seconds() > maxTimeForSpinUp){
+                    if(rightLauncher.getVelocity() > desiredMinVelocity || stateTimer.seconds() > maxTimeForSpinUp){
                         leftFeeder.setPower(ON);
                         rightFeeder.setPower(ON);
                         stateTimer.reset();
@@ -134,9 +145,12 @@ public class LauncherStateMachine {
                     if(launchRemaining > 0){
                         stateTimer.reset();
                         launcherState = LauncherState.SPIN_UP;
+                        if(launchRemaining < 3){
+                            launchTime = longTime;
+                        }
                     }else{
-                        leftLauncher.setVelocity(0);
-                        rightLauncher.setVelocity(0);
+                        leftLauncher.setVelocity(desiredTargetVelocity);
+                        rightLauncher.setVelocity(desiredTargetVelocity);
                         launcherState = LauncherState.IDLE;
                     }
                 }
@@ -145,14 +159,40 @@ public class LauncherStateMachine {
         }
     }
 
-    public void shoot(int numberOfShots, String[] pattern){
+    public void shoot(int numberOfShots, String[] pattern, int tagNumber){
         if(launcherState == LauncherState.IDLE){
             launchRemaining = numberOfShots;
             side = pattern;
+            if(tagNumber == 22){
+                launchTime = shortime;
+            }
         }
     }
     public boolean isBusy(){
         return launcherState != LauncherState.IDLE;
+    }
+
+    public void setClose(){
+        desiredTargetVelocity = LAUNCHER_CLOSE_TARGET_VELOCITY;
+        desiredMinVelocity = LAUNCHER_CLOSE_MIN_VELOCITY;
+    }
+
+    public void setFar(){
+        desiredTargetVelocity = LAUNCHER_FAR_TARGET_VELOCITY;
+        desiredMinVelocity = LAUNCHER_FAR_MIN_VELOCITY;
+    }
+
+    public int currentRemainingShot(){
+        return launchRemaining;
+    }
+
+    public void setLaunchTime(int time){
+        launchTime = time;
+    }
+
+    public void launcherOff(){
+        rightLauncher.setVelocity(0);
+        leftLauncher.setVelocity(0);
     }
 
 }

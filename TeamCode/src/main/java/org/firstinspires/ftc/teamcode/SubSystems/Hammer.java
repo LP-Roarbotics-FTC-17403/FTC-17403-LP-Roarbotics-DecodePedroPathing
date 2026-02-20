@@ -5,8 +5,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 public class Hammer {
     private Servo hammer = null;
-    final double LEFT_POSITION = 0.3162; //the left and right position for the diverter servo
+    final double LEFT_POSITION = 0.33; //the left and right position for the diverter servo
+    //changed from 0.33
     final double RIGHT_POSITION = 0.035;
+
+    final double middlePosition = 0.18;  //changed from 0.2
 
     private double closePosition = 0;
 
@@ -27,6 +30,10 @@ public class Hammer {
 
     public void setLeft(){
         hammer.setPosition(LEFT_POSITION);
+    }
+
+    public void setMiddle(){
+        hammer.setPosition(middlePosition);
     }
 
     public void setPosition(double closePosition, double openPosition){

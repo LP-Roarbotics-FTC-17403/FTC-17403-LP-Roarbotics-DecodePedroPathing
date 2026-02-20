@@ -153,7 +153,7 @@ public class CameraSystem {
                 }
             }
         }
-        return 21;
+        return 0;
     }
     public double getX(){
         return x;

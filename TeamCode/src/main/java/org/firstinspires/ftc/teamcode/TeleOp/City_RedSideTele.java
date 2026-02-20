@@ -39,8 +39,8 @@ public class City_RedSideTele extends OpMode {
     double launcherTarget = LAUNCHER_CLOSE_TARGET_VELOCITY; //These variables allow
     double launcherMin = LAUNCHER_CLOSE_MIN_VELOCITY;
 
-    final double RIGHT_OPEN_POSITION = 0.3162; //the left and right position for the diverter servo
-    final double RIGHT_CLOSE_POSITION = 0.035;
+    final double leftDiverter = 0.33; //the left and right position for the diverter servo 0.3162
+    final double rightDiverter = 0.035;
 
     final double LEFT_OPEN_POSITION = 0.3162;
     final double LEFT_CLOSE_POSITION = 0.035;
@@ -56,8 +56,7 @@ public class City_RedSideTele extends OpMode {
     private DcMotor transfer = null;
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
-    private Servo rightDiverter = null;
-    private Servo leftDiverter = null;
+    private Servo diverter = null;
 
     private LED leftLight;
     private LED rightLight;
@@ -83,10 +82,10 @@ public class City_RedSideTele extends OpMode {
     private LaunchState rightLaunchState;
 
     private enum DiverterDirection {
-        OPEN,
-        CLOSE;
+        LEFT,
+        RIGHT;
     }
-    private DiverterDirection diverterDirection = DiverterDirection.CLOSE;
+    private DiverterDirection diverterDirection = DiverterDirection.LEFT;
 
     private enum IntakeState {
         ON,
@@ -144,8 +143,7 @@ public class City_RedSideTele extends OpMode {
         transfer = hardwareMap.get(DcMotor.class, "transfer");
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
-        //rightDiverter = hardwareMap.get(Servo.class, "right_diverter");
-        //leftDiverter = hardwareMap.get(Servo.class, "left_diverter");
+        diverter = hardwareMap.get(Servo.class, "diverter");
         leftLight = new LED(hardwareMap, "left_light");
         rightLight = new LED(hardwareMap, "right_light");
         camera = new CameraSystem(hardwareMap);
@@ -246,23 +244,22 @@ public class City_RedSideTele extends OpMode {
             leftLauncher.setVelocity(STOP_SPEED);
             rightLauncher.setVelocity(STOP_SPEED);
         }
-/*
+
         if (gamepad2.dpadDownWasPressed()) {
             switch (diverterDirection){
-                case OPEN:
-                    diverterDirection = DiverterDirection.CLOSE;
-                    rightDiverter.setPosition(RIGHT_CLOSE_POSITION);
-                    leftDiverter.setPosition(LEFT_CLOSE_POSITION);
+                case LEFT:
+                    diverterDirection = DiverterDirection.RIGHT;
+                    diverter.setPosition(rightDiverter);
+
                     break;
-                case CLOSE:
-                    diverterDirection = DiverterDirection.OPEN;
-                    rightDiverter.setPosition(RIGHT_OPEN_POSITION);
-                    leftDiverter.setPosition(LEFT_OPEN_POSITION);
+                case RIGHT:
+                    diverterDirection = DiverterDirection.LEFT;
+                    diverter.setPosition(leftDiverter);
                     break;
             }
         }
 
- */
+
 
         if (gamepad2.dpadLeftWasPressed()) {
             switch (leftFeederState) {

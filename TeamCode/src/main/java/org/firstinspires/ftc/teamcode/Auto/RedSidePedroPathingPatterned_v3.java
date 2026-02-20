@@ -8,17 +8,18 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.teamcode.SubSystems.CameraSystem;
+import org.firstinspires.ftc.teamcode.SubSystems.Hammer;
+import org.firstinspires.ftc.teamcode.SubSystems.Inhaler;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(group = "Blue")
-public class BlueSidePedroPathing extends OpMode {
+@Autonomous(group = "Red")
+public class RedSidePedroPathingPatterned_v3 extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private LauncherStateMachine launcher = new LauncherStateMachine();
@@ -28,12 +29,21 @@ public class BlueSidePedroPathing extends OpMode {
     private String[] GPP = {"right", "right", "left"};
     private String[] PGP = {"right", "left", "right"};
     private String[] PPG = {"left", "right", "right"};
+
+    private String[] Preload;
+    private String[] first;
+    private String[] second;
     private boolean shotTriggered = false;
 
-    CameraSystem camera;
+    private CameraSystem camera;
+    Inhaler inhaler;
+    Inhaler transfer;
+
+    private Hammer hammer;
+
     private int pathState;
     //Set the different points robots may travel to
-    private final Pose startPose = new Pose(32.90173410404624, 0, Math.toRadians(0));
+    private final Pose startPose = new Pose(110.183, 131.171, Math.toRadians(90)); //from 110.183 from 134.171
     private final Pose scorePose = new Pose(0, 0, Math.toRadians(0));
     private final Pose pickup1Pose = new Pose(0, 0, Math.toRadians(0));
     private final Pose gateOpenPose = new Pose();
@@ -41,125 +51,127 @@ public class BlueSidePedroPathing extends OpMode {
     private final Pose pickup3Pose = new Pose(0, 0, Math.toRadians(0));
 
     //Different paths, Path for singular pathing, path chain for paths following one after another
-    private PathChain readAprilTag,scorePreload, grabPickup1, scorePickup1, openGate, grabPickup2, scorePickup2, grabPickup3, scorePickup3, endPath;
+    private PathChain readAprilTag,scorePreload, grabPickup1p1, grabPickup1p2, scorePickup1, grabPickup2p1, grabPickup2p2, grabPickup2p3, scorePickup2, grabPickup3p1, grabPickup3p2, endPath;
 
     //this is where you build all your paths
     public void buildPaths(){
         readAprilTag = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(32.902, 135.769),
+                                new Pose(110.183, 131.171),
 
-                                new Pose(49.341, 113.202)
+                                new Pose(94.659, 113.202)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(60))
+                ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(120))
 
                 .build();
 
         scorePreload = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(49.341, 113.202),
+                                new Pose(94.659, 113.202),
 
-                                new Pose(59.884, 83.457)
+                                new Pose(84.116, 85.636)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(130))
+                ).setLinearHeadingInterpolation(Math.toRadians(120), Math.toRadians(50))
 
                 .build();
 
-        grabPickup1 = follower.pathBuilder().addPath(
+        grabPickup1p1 = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(59.884, 83.457),
+                                new Pose(84.116, 85.636),
 
-                                new Pose(31.301, 80.763)
+                                new Pose(110.066, 87.400)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(130), Math.toRadians(180)).addPath(
-                        new BezierCurve(
-                                new Pose(31.301, 80.763),
-                                new Pose(39.176, 88.526),
-                                new Pose(20.035, 86.393)
-                        )
-                ).setConstantHeadingInterpolation(Math.toRadians(180))
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
 
                 .build();
 
-        openGate = follower.pathBuilder().addPath(
+        grabPickup1p2 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(20.035, 86.393),
-                                new Pose(35.295, 71.347),
-                                new Pose(17.387, 72.821)
+                                new Pose(110.066, 87.400),
+                                new Pose(95.841, 98.201),
+                                new Pose(124.849, 87.716)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(180))
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
 
                 .build();
 
         scorePickup1 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(17.387, 72.821),
-                                new Pose(38.390, 79.286),
-                                new Pose(59.890, 83.347)
+                                new Pose(124.849, 87.716),
+                                new Pose(105.610, 79.286),
+                                new Pose(84.110, 83.347)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(130))
+                ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(50))
 
                 .build();
 
-        grabPickup2 = follower.pathBuilder().addPath(
+        grabPickup2p1 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(59.890, 83.347),
-                                new Pose(57.986, 55.913),
-                                new Pose(30.289, 57.133)
+                                new Pose(84.110, 83.347),
+                                new Pose(77.919, 52.231),
+                                new Pose(105.261, 61.368)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(130), Math.toRadians(180)).addPath(
+                ).setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(0))
+
+                .build();
+
+        grabPickup2p2 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(30.289, 57.133),
-                                new Pose(37.260, 65.315),
-                                new Pose(22.751, 63.832)
+                                new Pose(105.261, 61.368),
+                                new Pose(87.355, 65.764),
+                                new Pose(110.907, 66.037)
                         )
-                ).setConstantHeadingInterpolation(Math.toRadians(180))
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
+
+                .build();
+
+        grabPickup2p3 = follower.pathBuilder().addPath(
+                        new BezierCurve(
+                                new Pose(110.907, 66.037),
+                                new Pose(99.688, 56.928),
+                                new Pose(125.964, 63.504)
+                        )
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
 
                 .build();
 
         scorePickup2 = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(22.751, 63.832),
+                                new Pose(125.964, 63.504),
 
-                                new Pose(59.988, 83.277)
+                                new Pose(84.012, 83.277)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(130))
+                ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(50))
 
                 .build();
 
-        grabPickup3 = follower.pathBuilder().addPath(
+        grabPickup3p1 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(59.988, 83.277),
-                                new Pose(65.256, 32.955),
-                                new Pose(29.994, 32.428)
+                                new Pose(84.012, 83.277),
+                                new Pose(76.332, 31.166),
+                                new Pose(105.606, 38.796)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(130), Math.toRadians(180)).addPath(
-                        new BezierCurve(
-                                new Pose(29.994, 32.428),
-                                new Pose(43.543, 42.272),
-                                new Pose(12.399, 37.457)
-                        )
-                ).setConstantHeadingInterpolation(Math.toRadians(180))
+                ).setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(0))
 
                 .build();
 
-        scorePickup3 = follower.pathBuilder().addPath(
-                        new BezierLine(
-                                new Pose(12.399, 37.457),
-
-                                new Pose(59.723, 83.382)
+        grabPickup3p2 = follower.pathBuilder().addPath(
+                        new BezierCurve(
+                                new Pose(105.606, 38.796),
+                                new Pose(94.605, 32.933),
+                                new Pose(123.797, 41.783)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(130))
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
 
                 .build();
 
         endPath = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(59.723, 83.382),
+                                new Pose(123.797, 41.783),
 
-                                new Pose(45.873, 69.486)
+                                new Pose(98.127, 69.486)
                         )
-                ).setConstantHeadingInterpolation(Math.toRadians(130))
+                ).setConstantHeadingInterpolation(Math.toRadians(0))
 
                 .build();
     }
@@ -168,6 +180,7 @@ public class BlueSidePedroPathing extends OpMode {
     public void autonomousPathUpdate() {
         switch (pathState) {
             case 0:
+                inhaler.inhale_on();
                 follower.followPath(readAprilTag);
                 actionTimer.resetTimer();
                 setPathState(1);
@@ -180,8 +193,9 @@ public class BlueSidePedroPathing extends OpMode {
             */
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the scorePose's position */
                 if(!follower.isBusy()) {
-                    if(actionTimer.getElapsedTimeSeconds() < 2){
-                        tagNumber = camera.getPattern();
+                    int tempPattern = camera.getPattern();
+                    if(tempPattern != 0){
+                        tagNumber = tempPattern;
                         if(tagNumber == 21){
                             pattern = GPP;
                         }else if(tagNumber == 22){
@@ -189,7 +203,6 @@ public class BlueSidePedroPathing extends OpMode {
                         }else if(tagNumber == 23){
                             pattern = PPG;
                         }
-                    }else{
                         aprilTagDone = true;
                     }
                     /* Score Preload */
@@ -203,11 +216,17 @@ public class BlueSidePedroPathing extends OpMode {
             case 2:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
                 if(!follower.isBusy()) {
+                    if(tagNumber != 22){
+                        transfer.inhale_on();
+                    }else if(launcher.currentRemainingShot() < 2){
+                        transfer.inhale_on();
+                    }
                     if(!shotTriggered){
-                        launcher.shoot(3, pattern);
+                        launcher.shoot(3, pattern, tagNumber);
                         shotTriggered = true;
                     }else if(shotTriggered && !launcher.isBusy()){
-                        follower.followPath(grabPickup1, true);
+                        follower.followPath(grabPickup1p1, true);
+                        transfer.inhale_off();
                         setPathState(3);
                         shotTriggered = false;
                         actionTimer.resetTimer();
@@ -215,14 +234,17 @@ public class BlueSidePedroPathing extends OpMode {
                 }
                 break;
             case 3:
-                if(!follower.isBusy()) {
-                        follower.followPath(openGate, true);
+                if(!follower.isBusy()){
+                    if (actionTimer.getElapsedTimeSeconds() > 1) {
+                        hammer.setMiddle();
+                        follower.followPath(grabPickup1p2, true);
                         setPathState(4);
+                    }
                 }
-                break;
             case 4:
                 if(!follower.isBusy()){
                     if (actionTimer.getElapsedTimeSeconds() > 1) {
+                        hammer.setLeft();
                         follower.followPath(scorePickup1, true);
                         setPathState(5);
                     }
@@ -230,11 +252,17 @@ public class BlueSidePedroPathing extends OpMode {
                 break;
             case 5:
                 if(!follower.isBusy()) {
+                    if(tagNumber != 22){
+                        transfer.inhale_on();
+                    }else if(launcher.currentRemainingShot() < 2){
+                        transfer.inhale_on();
+                    }
                     if(!shotTriggered){
-                        launcher.shoot(3, pattern);
+                        launcher.shoot(3, pattern, tagNumber);
                         shotTriggered = true;
                     }else if(shotTriggered && !launcher.isBusy()){
-                        follower.followPath(grabPickup2, true);
+                        follower.followPath(grabPickup2p1, true);
+                        transfer.inhale_off();
                         setPathState(6);
                         shotTriggered = false;
                         actionTimer.resetTimer();
@@ -243,43 +271,63 @@ public class BlueSidePedroPathing extends OpMode {
                 break;
             case 6:
                 if(!follower.isBusy()) {
-                    follower.followPath(scorePickup2, true);
+                    hammer.setRight();
+                    transfer.inhale_on();
+                    follower.followPath(grabPickup2p2, true);
                     setPathState(7);
                 }
                 break;
             case 7:
                 if(!follower.isBusy()) {
-                    if(!shotTriggered){
-                        launcher.shoot(3, pattern);
-                        shotTriggered = true;
-                    }else if(shotTriggered && !launcher.isBusy()){
-                        follower.followPath(grabPickup3, true);
-                        setPathState(8);
-                        shotTriggered = false;
-                        actionTimer.resetTimer();
-                    }
+                    hammer.setLeft();
+                    follower.followPath(grabPickup2p3, true);
+                    transfer.inhale_off();
+                    setPathState(8);
                 }
                 break;
             case 8:
                 if(!follower.isBusy()) {
-                    follower.followPath(scorePickup3, true);
+                    follower.followPath(scorePickup2, true);
                     setPathState(9);
                 }
                 break;
             case 9:
                 if(!follower.isBusy()) {
+                    if(tagNumber != 22){
+                        transfer.inhale_on();
+                    }else if(launcher.currentRemainingShot() < 2){
+                        transfer.inhale_on();
+                    }
                     if(!shotTriggered){
-                        launcher.shoot(3, pattern);
+                        launcher.shoot(3, pattern, tagNumber);
                         shotTriggered = true;
                     }else if(shotTriggered && !launcher.isBusy()){
-                        follower.followPath(endPath, true);
+                        follower.followPath(grabPickup3p1, true);
+                        transfer.inhale_off();
                         setPathState(10);
                         shotTriggered = false;
+                        hammer.setRight();
                         actionTimer.resetTimer();
                     }
                 }
                 break;
             case 10:
+                if(!follower.isBusy()){
+                    if (actionTimer.getElapsedTimeSeconds() > 1) {
+                        hammer.setLeft();
+                        follower.followPath(grabPickup3p2, true);
+                        setPathState(11);
+                    }
+                }
+            case 11:
+                if(!follower.isBusy()){
+                    if (actionTimer.getElapsedTimeSeconds() > 1) {
+                        follower.followPath(endPath, true);
+                        setPathState(12);
+                    }
+                }
+                break;
+            case 12:
         }
     }
     //this is what you use to update the desired state
@@ -295,6 +343,8 @@ public class BlueSidePedroPathing extends OpMode {
         // These loop the movements of the robot, these must be called continuously in order to work
         follower.update();
         launcher.update();
+        telemetry.addData("current tag id: ", tagNumber);
+        telemetry.update();
         //this continuously updates which path to run
         autonomousPathUpdate();
     }
@@ -302,15 +352,22 @@ public class BlueSidePedroPathing extends OpMode {
     @Override
     public void init() {
         camera = new CameraSystem(hardwareMap);
+        transfer = new Inhaler(hardwareMap, "transfer");
+        inhaler = new Inhaler(hardwareMap, "intake");
+        hammer = new Hammer(hardwareMap, "diverter");
         pathTimer = new Timer();
         opmodeTimer = new Timer();
         actionTimer = new Timer();
         opmodeTimer.resetTimer();
         camera.cameraOn();
         follower = Constants.createFollower(hardwareMap);
+        inhaler.initialize(true);
+        transfer.initialize(true);
+        hammer.initialize();
         buildPaths();
         follower.setStartingPose(startPose);
         launcher.init(hardwareMap);
+        launcher.setClose();
     }
     /** This method is called continuously after Init while waiting for "play". **/
     @Override
