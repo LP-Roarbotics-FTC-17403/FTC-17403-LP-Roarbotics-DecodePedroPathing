@@ -109,7 +109,7 @@ public class RedSidePedroPathingPatterned_v3 extends OpMode {
                         new BezierCurve(
                                 new Pose(84.110, 83.347),
                                 new Pose(77.919, 52.231),
-                                new Pose(105.261, 61.368)
+                                new Pose(104.761, 61.368)
                         )
                 ).setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(0))
 
@@ -129,7 +129,8 @@ public class RedSidePedroPathingPatterned_v3 extends OpMode {
                         new BezierCurve(
                                 new Pose(110.907, 66.037),
                                 new Pose(99.688, 56.928),
-                                new Pose(125.964, 63.504)
+                                new Pose(125.364, 66.704)
+                                //new Pose(125.964, 63.504)
                         )
                 ).setConstantHeadingInterpolation(Math.toRadians(0))
 

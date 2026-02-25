@@ -71,7 +71,7 @@ public class BlueSidePedroPathingPatterned_v3 extends OpMode {
 
                                 new Pose(59.884, 83.457)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(135))
+                ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(133))
 
                 .build();
 

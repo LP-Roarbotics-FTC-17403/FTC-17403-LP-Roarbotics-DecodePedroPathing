@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.SubSystems.LED;
  * 2025-2026 FIRST® Tech Challenge season DECODE™!
  */
 
-@TeleOp(name = "AprilTagPoseDetection", group = "TeleOp")
+@TeleOp(group = "TroubleShoot")
 //@Disabled
 public class AprilTagPoseDetection extends LinearOpMode {
     final double FEED_TIME_SECONDS = 2.80; //The feeder servos run this long when a shot is requested.

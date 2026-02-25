@@ -43,7 +43,7 @@ public class BlueSidePedroPathingPatternedFar extends OpMode {
 
     private int pathState;
     //Set the different points robots may travel to
-    private final Pose startPose = new Pose(33.942, 133.896, Math.toRadians(90));
+    private final Pose startPose = new Pose(57.212, 9.038, Math.toRadians(90));
     private final Pose scorePose = new Pose(0, 0, Math.toRadians(0));
     private final Pose pickup1Pose = new Pose(0, 0, Math.toRadians(0));
     private final Pose gateOpenPose = new Pose();
