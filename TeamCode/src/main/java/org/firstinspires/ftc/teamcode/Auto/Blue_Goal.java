@@ -13,13 +13,14 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.Logics.LauncherStateMachine;
 import org.firstinspires.ftc.teamcode.SubSystems.CameraSystem;
 import org.firstinspires.ftc.teamcode.SubSystems.Hammer;
 import org.firstinspires.ftc.teamcode.SubSystems.Inhaler;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous(group = "Red")
-public class RedSidePedroPathingPatterned_v3 extends OpMode {
+@Autonomous(group = "Blue")
+public class Blue_Goal extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private LauncherStateMachine launcher = new LauncherStateMachine();
@@ -43,7 +44,7 @@ public class RedSidePedroPathingPatterned_v3 extends OpMode {
 
     private int pathState;
     //Set the different points robots may travel to
-    private final Pose startPose = new Pose(110.183, 131.171, Math.toRadians(90)); //from 110.183 from 134.171
+    private final Pose startPose = new Pose(33.942, 133.896, Math.toRadians(90));
     private final Pose scorePose = new Pose(0, 0, Math.toRadians(0));
     private final Pose pickup1Pose = new Pose(0, 0, Math.toRadians(0));
     private final Pose gateOpenPose = new Pose();
@@ -51,128 +52,128 @@ public class RedSidePedroPathingPatterned_v3 extends OpMode {
     private final Pose pickup3Pose = new Pose(0, 0, Math.toRadians(0));
 
     //Different paths, Path for singular pathing, path chain for paths following one after another
-    private PathChain readAprilTag,scorePreload, grabPickup1p1, grabPickup1p2, scorePickup1, grabPickup2p1, grabPickup2p2, grabPickup2p3, scorePickup2, grabPickup3p1, grabPickup3p2, endPath;
+    private PathChain readAprilTag,scorePreload, grabPickup1p1, grabPickup1p2, scorePickup1, grabPickup2p1, grabPickup2p2, grabPickup2p3, scorePickup2, grabPickup3p1, grabPickup3p2, scorePickup3, endPath;
 
     //this is where you build all your paths
     public void buildPaths(){
         readAprilTag = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(110.183, 131.171),
+                                new Pose(33.942, 133.896),
 
-                                new Pose(94.659, 113.202)
+                                new Pose(49.341, 113.202)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(120))
+                ).setLinearHeadingInterpolation(Math.toRadians(90), Math.toRadians(60))
 
                 .build();
 
         scorePreload = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(94.659, 113.202),
+                                new Pose(49.341, 113.202),
 
-                                new Pose(84.116, 85.636)
+                                new Pose(59.884, 83.457)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(120), Math.toRadians(50))
+                ).setLinearHeadingInterpolation(Math.toRadians(60), Math.toRadians(133))
 
                 .build();
 
         grabPickup1p1 = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(84.116, 85.636),
+                                new Pose(59.884, 83.457),
 
-                                new Pose(110.066, 87.400)
+                                new Pose(38.549, 85.636)
                         )
-                ).setConstantHeadingInterpolation(Math.toRadians(0))
+                ).setConstantHeadingInterpolation(Math.toRadians(180))
+                //.setTangentHeadingInterpolation()
 
                 .build();
 
         grabPickup1p2 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(110.066, 87.400),
-                                new Pose(95.841, 98.201),
-                                new Pose(124.849, 87.716)
+                                new Pose(38.549, 85.636),
+                                new Pose(65.986, 76.566),
+                                new Pose(22.324, 84.601)   //from 83.601
                         )
-                ).setConstantHeadingInterpolation(Math.toRadians(0))
+                ).setConstantHeadingInterpolation(Math.toRadians(180))
 
                 .build();
 
         scorePickup1 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(124.849, 87.716),
-                                new Pose(105.610, 79.286),
-                                new Pose(84.110, 83.347)
+                                new Pose(22.324, 83.601),
+                                new Pose(38.390, 79.286),
+                                new Pose(59.890, 83.347)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(50))
+                ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(135))
 
                 .build();
 
         grabPickup2p1 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(84.110, 83.347),
-                                new Pose(77.919, 52.231),
-                                new Pose(104.761, 61.368)
+                                new Pose(59.890, 83.347),
+                                new Pose(55.696, 49.462),
+                                new Pose(41.740, 57.133)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(0))
+                ).setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
 
                 .build();
 
         grabPickup2p2 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(105.261, 61.368),
-                                new Pose(87.355, 65.764),
-                                new Pose(110.907, 66.037)
+                                new Pose(41.740, 57.133),
+                                new Pose(55.780, 64.899),
+                                new Pose(36.266, 62.561)
                         )
-                ).setConstantHeadingInterpolation(Math.toRadians(0))
+                ).setConstantHeadingInterpolation(Math.toRadians(180))
 
                 .build();
 
         grabPickup2p3 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(110.907, 66.037),
-                                new Pose(99.688, 56.928),
-                                new Pose(125.364, 66.704)
-                                //new Pose(125.964, 63.504)
+                                new Pose(36.266, 62.561),
+                                new Pose(50.716, 54.505), //35 to 50
+                                new Pose(27.440, 61.312) //60 to 61
                         )
-                ).setConstantHeadingInterpolation(Math.toRadians(0))
+                ).setConstantHeadingInterpolation(Math.toRadians(180))
 
                 .build();
 
         scorePickup2 = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(125.964, 63.504),
+                                new Pose(27.440, 58.312),
 
-                                new Pose(84.012, 83.277)
+                                new Pose(59.988, 83.277)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(0), Math.toRadians(50))
+                ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(135))
 
                 .build();
 
         grabPickup3p1 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(84.012, 83.277),
-                                new Pose(76.332, 31.166),
-                                new Pose(105.606, 38.796)
+                                new Pose(59.988, 83.277),
+                                new Pose(57.283, 24.243),
+                                new Pose(41.740, 32.110)
                         )
-                ).setLinearHeadingInterpolation(Math.toRadians(50), Math.toRadians(0))
+                ).setLinearHeadingInterpolation(Math.toRadians(135), Math.toRadians(180))
 
                 .build();
 
         grabPickup3p2 = follower.pathBuilder().addPath(
                         new BezierCurve(
-                                new Pose(105.606, 38.796),
-                                new Pose(94.605, 32.933),
-                                new Pose(123.797, 41.783)
+                                new Pose(41.740, 32.110),
+                                new Pose(57.702, 38.818),
+                                new Pose(24.491, 35.873)
                         )
-                ).setConstantHeadingInterpolation(Math.toRadians(0))
+                ).setConstantHeadingInterpolation(Math.toRadians(180))
 
                 .build();
 
         endPath = follower.pathBuilder().addPath(
                         new BezierLine(
-                                new Pose(123.797, 41.783),
+                                new Pose(59.988, 83.277),
 
-                                new Pose(98.127, 69.486)
+                                new Pose(45.873, 69.486)
                         )
-                ).setConstantHeadingInterpolation(Math.toRadians(0))
+                ).setConstantHeadingInterpolation(Math.toRadians(180))
 
                 .build();
     }

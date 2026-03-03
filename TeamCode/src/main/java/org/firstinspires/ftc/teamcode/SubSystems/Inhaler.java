@@ -20,6 +20,12 @@ public class Inhaler {
         inhale.setPower(INHALE_OFF);
     }
 
+    public void otherway(){
+        inhale.setDirection(DcMotorSimple.Direction.REVERSE);
+    }
+    public void forward(){
+        inhale.setDirection(DcMotorSimple.Direction.FORWARD);
+    }
     public void inhale_on(){
         inhale.setPower(INHALE_ON);
     }

@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.Logics.RevV3ColorSensorLogic;
+import org.firstinspires.ftc.teamcode.Logics.GoBildaDistanceSensorLogic;
 import org.firstinspires.ftc.teamcode.SubSystems.Hammer;
 import org.firstinspires.ftc.teamcode.SubSystems.Inhaler;
 
@@ -15,7 +15,7 @@ import org.firstinspires.ftc.teamcode.SubSystems.Inhaler;
 
 @TeleOp(group = "TroubleShoot")
 //@Disabled
-public class RevColorSensorLogicTest extends LinearOpMode {
+public class GoBildaDistanceLogicTest extends LinearOpMode {
 
     private Inhaler inhaler;
     private Inhaler transfer;
@@ -35,7 +35,7 @@ public class RevColorSensorLogicTest extends LinearOpMode {
     private int state = 0;
 
     // Declare OpMode members.
-    private RevV3ColorSensorLogic detection = new RevV3ColorSensorLogic();
+    private GoBildaDistanceSensorLogic detection = new GoBildaDistanceSensorLogic();
 
     private ElapsedTime timer = new ElapsedTime();
     @Override
@@ -92,8 +92,7 @@ public class RevColorSensorLogicTest extends LinearOpMode {
                 telemetry.addLine("Press 'b' to start over.");
             }
             telemetry.addLine("Current sensor behavior: " + detection.currentMessage());
-            telemetry.addData("Left Distance: ", detection.getLeftDistance());
-            telemetry.addData("Right Distance: ", detection.getRightDistance());
+            telemetry.addData("Left Distance: ", detection.getDistance());
             telemetry.update();
         }
     }

@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.Logics.AutomaticIntakeLogic;
 import org.firstinspires.ftc.teamcode.SubSystems.CameraSystem;
 import org.firstinspires.ftc.teamcode.SubSystems.LED;
 
@@ -22,7 +23,7 @@ import org.firstinspires.ftc.teamcode.SubSystems.LED;
 
 @TeleOp(group = "TeleOp")
 //@Disabled
-public class City_RedSideTeleTest extends OpMode {
+public class City_RedSideTele_AutoDivert extends OpMode {
     final double FEED_TIME_SECONDS = 2.80; //The feeder servos run this long when a shot is requested.
     final double STOP_SPEED = 0.0; //We send this power to the servos when we want them to stop.
     final double FULL_SPEED = 1.0;
@@ -39,11 +40,14 @@ public class City_RedSideTeleTest extends OpMode {
     double launcherTarget = LAUNCHER_CLOSE_TARGET_VELOCITY; //These variables allow
     double launcherMin = LAUNCHER_CLOSE_MIN_VELOCITY;
 
-    final double RIGHT_OPEN_POSITION = 0.3162; //the left and right position for the diverter servo
-    final double RIGHT_CLOSE_POSITION = 0.035;
+    final double leftDiverter = 0.33; //the left and right position for the diverter servo 0.3162
+    final double rightDiverter = 0.035;
 
-    final double LEFT_OPEN_POSITION = 0.3162;
-    final double LEFT_CLOSE_POSITION = 0.035;
+    final double LEFT_OPEN_POSITION = 0;
+    final double LEFT_CLOSE_POSITION = 0.175;
+
+    final double RIGHT_CLOSE_POSITION = 0.05;
+    final double RIGHT_OPEN_POSITION = 0.225;
 
     // Declare OpMode members.
     private DcMotor leftFrontDrive = null;
@@ -52,16 +56,18 @@ public class City_RedSideTeleTest extends OpMode {
     private DcMotor rightBackDrive = null;
     private DcMotorEx leftLauncher = null;
     private DcMotorEx rightLauncher = null;
-    private DcMotor intake = null;
-    private DcMotor transfer = null;
+
     private CRServo leftFeeder = null;
     private CRServo rightFeeder = null;
-    private Servo rightDiverter = null;
-    private Servo leftDiverter = null;
+
+    private Servo leftGate = null;
+    private Servo rightGate = null;
 
     private LED leftLight;
     private LED rightLight;
+    private LED middleLight;
     private CameraSystem camera;
+    private AutomaticIntakeLogic logic;
     double currentYaw;
     double currentPitch;
     double currentRoll;
@@ -83,10 +89,10 @@ public class City_RedSideTeleTest extends OpMode {
     private LaunchState rightLaunchState;
 
     private enum DiverterDirection {
-        OPEN,
-        CLOSE;
+        LEFT,
+        RIGHT;
     }
-    private DiverterDirection diverterDirection = DiverterDirection.CLOSE;
+    private DiverterDirection diverterDirection = DiverterDirection.LEFT;
 
     private enum IntakeState {
         ON,
@@ -94,11 +100,6 @@ public class City_RedSideTeleTest extends OpMode {
     }
 
     private enum TransferState {
-        ON,
-        OFF;
-    }
-
-    private enum ReverseShooterState {
         ON,
         OFF;
     }
@@ -117,8 +118,6 @@ public class City_RedSideTeleTest extends OpMode {
     private TransferState transferState = TransferState.OFF;
     private LeftFeederState leftFeederState = LeftFeederState.OFF;
     private RightFeederState rightFeederState = RightFeederState.OFF;
-
-    private ReverseShooterState reverseShooterState = ReverseShooterState.OFF;
 
     private enum LauncherDistance {
         CLOSE,
@@ -147,15 +146,15 @@ public class City_RedSideTeleTest extends OpMode {
         rightBackDrive = hardwareMap.get(DcMotor.class, "right_back_drive");
         leftLauncher = hardwareMap.get(DcMotorEx.class, "left_launcher");
         rightLauncher = hardwareMap.get(DcMotorEx.class, "right_launcher");
-        intake = hardwareMap.get(DcMotor.class, "intake");
-        transfer = hardwareMap.get(DcMotor.class, "transfer");
         leftFeeder = hardwareMap.get(CRServo.class, "left_feeder");
         rightFeeder = hardwareMap.get(CRServo.class, "right_feeder");
-        //rightDiverter = hardwareMap.get(Servo.class, "right_diverter");
-        //leftDiverter = hardwareMap.get(Servo.class, "left_diverter");
         leftLight = new LED(hardwareMap, "left_light");
         rightLight = new LED(hardwareMap, "right_light");
+        middleLight = new LED(hardwareMap, "middle_light");
+        rightGate = hardwareMap.get(Servo.class, "right_gate");
+        leftGate = hardwareMap.get(Servo.class, "left_gate");
         camera = new CameraSystem(hardwareMap);
+        logic = new AutomaticIntakeLogic();
 
         /*
          * To drive forward, most robots need the motor on one side to be reversed,
@@ -192,8 +191,8 @@ public class City_RedSideTeleTest extends OpMode {
         leftFeeder.setPower(STOP_SPEED);
         rightFeeder.setPower(STOP_SPEED);
 
-        leftLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
-        rightLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+        leftLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(390, 0, 0, 14.4));
+        rightLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(390, 0, 0, 14.4));
 
         /*
          * Much like our drivetrain motors, we set the left feeder servo to reverse so that they
@@ -227,6 +226,7 @@ public class City_RedSideTeleTest extends OpMode {
      */
     @Override
     public void loop() {
+        logic.update(true);
         lightings(24);
         currentYaw = camera.getYaw();
         currentPitch = camera.getPitch();
@@ -253,37 +253,29 @@ public class City_RedSideTeleTest extends OpMode {
             leftLauncher.setVelocity(STOP_SPEED);
             rightLauncher.setVelocity(STOP_SPEED);
         }
-/*
+
         if (gamepad2.dpadDownWasPressed()) {
             switch (diverterDirection){
-                case OPEN:
-                    diverterDirection = DiverterDirection.CLOSE;
-                    rightDiverter.setPosition(RIGHT_CLOSE_POSITION);
-                    leftDiverter.setPosition(LEFT_CLOSE_POSITION);
+                case LEFT:
+                    diverterDirection = DiverterDirection.RIGHT;
+                    logic.divertRight();
+
                     break;
-                case CLOSE:
-                    diverterDirection = DiverterDirection.OPEN;
-                    rightDiverter.setPosition(RIGHT_OPEN_POSITION);
-                    leftDiverter.setPosition(LEFT_OPEN_POSITION);
+                case RIGHT:
+                    diverterDirection = DiverterDirection.LEFT;
+                    logic.divertLeft();
                     break;
             }
+        }
+        if(gamepad1.dpadDownWasPressed()){
+            logic.man();
+        }
+        if(gamepad1.dpadUpWasPressed()){
+            logic.auto();
         }
 
- */
-        if (gamepad2.aWasPressed()) {
-            switch(reverseShooterState) {
-                case ON:
-                    leftLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
-                    rightLauncher.setDirection(DcMotorSimple.Direction.FORWARD);
-                    leftLauncher.setVelocity(launcherTarget);
-                    rightLauncher.setVelocity(launcherTarget);
-                case OFF:
-                    leftLauncher.setDirection(DcMotorSimple.Direction.FORWARD);
-                    rightLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
-                    leftLauncher.setVelocity(STOP_SPEED);
-                    rightLauncher.setVelocity(STOP_SPEED);
-            }
-        }
+
+
 
         if (gamepad2.dpadLeftWasPressed()) {
             switch (leftFeederState) {
@@ -306,18 +298,20 @@ public class City_RedSideTeleTest extends OpMode {
                     rightFeeder.setPower(0);
             }
         }
-
+        if(gamepad1.dpadRightWasPressed()){
+            logic.startDetect();
+        }
         if (gamepad1.aWasPressed()){
             switch (intakeState){
                 case ON:
-                    intake.setDirection(DcMotorSimple.Direction.FORWARD);
+                    logic.intakeReverse();
                     intakeState = IntakeState.OFF;
-                    intake.setPower(0);
+                    logic.intakeOff();
                     break;
                 case OFF:
-                    intake.setDirection(DcMotorSimple.Direction.REVERSE);
+                    logic.intakeForward();
                     intakeState = IntakeState.ON;
-                    intake.setPower(1);
+                    logic.intakeOn();
                     break;
             }
         }
@@ -326,14 +320,14 @@ public class City_RedSideTeleTest extends OpMode {
         if (gamepad1.bWasPressed()){
             switch (intakeState){
                 case ON:
-                    intake.setDirection(DcMotorSimple.Direction.REVERSE);
+                    logic.intakeForward();
                     intakeState = IntakeState.OFF;
-                    intake.setPower(0);
+                    logic.intakeOn();
                     break;
                 case OFF:
-                    intake.setDirection(DcMotorSimple.Direction.FORWARD);
+                    logic.intakeReverse();
                     intakeState = IntakeState.ON;
-                    intake.setPower(1);
+                    logic.intakeOff();
                     break;
             }
         }
@@ -341,14 +335,14 @@ public class City_RedSideTeleTest extends OpMode {
         if (gamepad1.xWasPressed()){
             switch (transferState){
                 case ON:
-                    transfer.setDirection(DcMotorSimple.Direction.REVERSE);
+                    logic.transferForward();
                     transferState = TransferState.OFF;
-                    transfer.setPower(0);
+                    logic.transferOff();
                     break;
                 case OFF:
-                    transfer.setDirection(DcMotorSimple.Direction.FORWARD);
+                    logic.transferReverse();
+                    logic.transferOn();
                     transferState = TransferState.ON;
-                    transfer.setPower(1);
                     break;
             }
         }
@@ -356,14 +350,14 @@ public class City_RedSideTeleTest extends OpMode {
         if (gamepad1.yWasPressed()){
             switch (transferState){
                 case ON:
-                    transfer.setDirection(DcMotorSimple.Direction.FORWARD);
+                    logic.transferReverse();
                     transferState = TransferState.OFF;
-                    transfer.setPower(0);
+                    logic.transferOff();
                     break;
                 case OFF:
-                    transfer.setDirection(DcMotorSimple.Direction.REVERSE);
+                    logic.transferForward();
                     transferState = TransferState.ON;
-                    transfer.setPower(1);
+                    logic.transferOn();
                     break;
             }
         }
@@ -384,12 +378,15 @@ public class City_RedSideTeleTest extends OpMode {
         }
         if(camera.getDetected()){
             if(currentZ > 134){
+                middleLight.setRed();
                 launcherTarget = TOOFAR;
                 launcherMin = TOOFARMIN;
             }else if(currentZ > 113){
+                middleLight.setRed();
                 launcherTarget = LAUNCHER_FAR_TARGET_VELOCITY;
                 launcherMin = LAUNCHER_FAR_MIN_VELOCITY;
             }else{
+                middleLight.setYellow();
                 launcherTarget = LAUNCHER_CLOSE_TARGET_VELOCITY;
                 launcherMin = LAUNCHER_CLOSE_MIN_VELOCITY;
             }
@@ -421,10 +418,6 @@ public class City_RedSideTeleTest extends OpMode {
         telemetry.addData("launch distance", launcherDistance);
         telemetry.addData("Left Launcher Velocity", leftLauncher.getVelocity());
         telemetry.addData("Right Launcher Velocity", rightLauncher.getVelocity());
-    }
-
-    private boolean isA() {
-        return gamepad2.a;
     }
 
     /*
@@ -466,9 +459,11 @@ public class City_RedSideTeleTest extends OpMode {
             case IDLE:
                 if (shotRequested) {
                     leftLaunchState = LaunchState.SPIN_UP;
+                    logic.launching();
                 }
                 break;
             case SPIN_UP:
+                leftGate.setPosition(LEFT_OPEN_POSITION);
                 leftLauncher.setVelocity(launcherTarget);
                 rightLauncher.setVelocity(launcherTarget);
                 if (leftLauncher.getVelocity() > launcherMin) {
@@ -484,6 +479,7 @@ public class City_RedSideTeleTest extends OpMode {
                 if (leftFeederTimer.seconds() > FEED_TIME_SECONDS) {
                     leftLaunchState = LaunchState.IDLE;
                     leftFeeder.setPower(STOP_SPEED);
+                    leftGate.setPosition(LEFT_CLOSE_POSITION);
                 }
                 break;
         }
@@ -493,9 +489,11 @@ public class City_RedSideTeleTest extends OpMode {
             case IDLE:
                 if (shotRequested) {
                     rightLaunchState = LaunchState.SPIN_UP;
+                    logic.launching();
                 }
                 break;
             case SPIN_UP:
+                rightGate.setPosition(RIGHT_OPEN_POSITION);
                 leftLauncher.setVelocity(launcherTarget);
                 rightLauncher.setVelocity(launcherTarget);
                 if (leftLauncher.getVelocity() > launcherMin) {
@@ -511,6 +509,7 @@ public class City_RedSideTeleTest extends OpMode {
                 if (rightFeederTimer.seconds() > FEED_TIME_SECONDS) {
                     rightLaunchState = LaunchState.IDLE;
                     rightFeeder.setPower(STOP_SPEED);
+                    rightGate.setPosition(RIGHT_CLOSE_POSITION);
                 }
                 break;
         }

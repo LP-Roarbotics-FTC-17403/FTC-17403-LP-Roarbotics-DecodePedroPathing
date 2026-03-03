@@ -12,13 +12,14 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.Logics.LauncherStateMachine;
 import org.firstinspires.ftc.teamcode.SubSystems.CameraSystem;
 import org.firstinspires.ftc.teamcode.SubSystems.Hammer;
 import org.firstinspires.ftc.teamcode.SubSystems.Inhaler;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous(group = "Red")
-public class RedSidePedroPathingPatternedFar extends OpMode {
+public class Red_Far_Preload_Only extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private LauncherStateMachine launcher = new LauncherStateMachine();

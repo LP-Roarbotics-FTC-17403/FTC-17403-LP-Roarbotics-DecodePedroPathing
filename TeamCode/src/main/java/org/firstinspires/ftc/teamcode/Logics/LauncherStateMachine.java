@@ -1,6 +1,4 @@
-package org.firstinspires.ftc.teamcode.Auto;
-
-import static com.qualcomm.robotcore.hardware.DcMotor.ZeroPowerBehavior.BRAKE;
+package org.firstinspires.ftc.teamcode.Logics;
 
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -9,9 +7,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.util.ElapsedTime;
-
-import org.firstinspires.ftc.teamcode.SubSystems.Firecracker;
-import org.firstinspires.ftc.teamcode.SubSystems.Inhaler;
 
 public class LauncherStateMachine {
     private DcMotorEx rightLauncher = null;

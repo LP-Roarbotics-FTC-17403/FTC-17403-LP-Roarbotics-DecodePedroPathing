@@ -13,13 +13,14 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.teamcode.Logics.LauncherStateMachine;
 import org.firstinspires.ftc.teamcode.SubSystems.CameraSystem;
 import org.firstinspires.ftc.teamcode.SubSystems.Hammer;
 import org.firstinspires.ftc.teamcode.SubSystems.Inhaler;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 @Autonomous(group = "Blue")
-public class BlueSidePedroPathingPatternedFar extends OpMode {
+public class Blue_Far_8_Artifact extends OpMode {
     private Follower follower;
     private Timer pathTimer, actionTimer, opmodeTimer;
     private LauncherStateMachine launcher = new LauncherStateMachine();
@@ -51,7 +52,7 @@ public class BlueSidePedroPathingPatternedFar extends OpMode {
     private final Pose pickup3Pose = new Pose(0, 0, Math.toRadians(0));
 
     //Different paths, Path for singular pathing, path chain for paths following one after another
-    private PathChain scorePreload, endPath;
+    private PathChain scorePreload, grabPickup1p1, grabPickup1p2, scorePickup1, grabPickup2p1, grabPickup2p2, scorePickup2, endPath;
 
     //this is where you build all your paths
     public void buildPaths(){
@@ -65,13 +66,72 @@ public class BlueSidePedroPathingPatternedFar extends OpMode {
 
                 .build();
 
+        grabPickup1p1 = follower.pathBuilder().addPath(
+                        new BezierCurve(
+                                new Pose(59.481, 21.635),
+                                new Pose(60.437, 33.693),
+                                new Pose(41.740, 32.110)
+                        )
+                ).setConstantHeadingInterpolation(Math.toRadians(180))
+
+                .build();
+
+        grabPickup1p2 = follower.pathBuilder().addPath(
+                        new BezierCurve(
+                                new Pose(41.740, 32.110),
+                                new Pose(57.702, 38.818),
+                                new Pose(24.491, 35.873)
+                        )
+                ).setConstantHeadingInterpolation(Math.toRadians(180))
+
+                .build();
+
+        scorePickup1 = follower.pathBuilder().addPath(
+                        new BezierLine(
+                                new Pose(24.491, 35.873),
+
+                                new Pose(59.481, 21.635)
+                        )
+                ).setLinearHeadingInterpolation(Math.toRadians(180), Math.toRadians(110))
+
+                .build();
+
+        grabPickup2p1 = follower.pathBuilder().addPath(
+                        new BezierCurve(
+                                new Pose(59.481, 21.635),
+                                new Pose(35.336, 24.320),
+                                new Pose(14.405, 18.092)
+                        )
+                ).setLinearHeadingInterpolation(Math.toRadians(110), Math.toRadians(210))
+
+                .build();
+
+        grabPickup2p2 = follower.pathBuilder().addPath(
+                        new BezierCurve(
+                                new Pose(14.405, 18.092),
+                                new Pose(46.532, 22.627),
+                                new Pose(14.694, 12.642)
+                        )
+                ).setLinearHeadingInterpolation(Math.toRadians(210), Math.toRadians(190))
+
+                .build();
+
+        scorePickup2 = follower.pathBuilder().addPath(
+                        new BezierLine(
+                                new Pose(14.694, 12.642),
+
+                                new Pose(59.481, 21.635)
+                        )
+                ).setLinearHeadingInterpolation(Math.toRadians(190), Math.toRadians(110))
+
+                .build();
         endPath = follower.pathBuilder().addPath(
                         new BezierLine(
                                 new Pose(59.481, 21.635),
 
-                                new Pose(15.404, 13.327)
+                                new Pose(48.260, 20.428)
                         )
-                ).setConstantHeadingInterpolation(Math.toRadians(90))
+                ).setConstantHeadingInterpolation(Math.toRadians(110))
 
                 .build();
     }
@@ -115,17 +175,86 @@ public class BlueSidePedroPathingPatternedFar extends OpMode {
                         launcher.shoot(3, pattern, tagNumber);
                         shotTriggered = true;
                     }else if(shotTriggered && !launcher.isBusy()){
-                        follower.followPath(endPath, true);
+                        follower.followPath(grabPickup1p1, true);
                         transfer.inhale_off();
                         setPathState(2);
                         shotTriggered = false;
-                        actionTimer.resetTimer();
+                        hammer.setRight();
                     }
                 }
                 break;
             case 2:
-                inhaler.inhale_off();
-                launcher.launcherOff();
+                if(!follower.isBusy()){
+                    if (actionTimer.getElapsedTimeSeconds() > 1) {
+                        follower.followPath(grabPickup1p2, true);
+                        setPathState(3);
+                        hammer.setLeft();
+                    }
+                }
+            case 3:
+                if(!follower.isBusy()){
+                    if (actionTimer.getElapsedTimeSeconds() > 1) {
+                        follower.followPath(scorePickup1, true);
+                        setPathState(4);
+                    }
+                }
+                break;
+            case 4:
+                if(!follower.isBusy()) {
+                    if(tagNumber != 22){
+                        transfer.inhale_on();
+                    }else if(launcher.currentRemainingShot() < 2){
+                        transfer.inhale_on();
+                    }
+                    if(!shotTriggered){
+                        launcher.shoot(3, pattern, tagNumber);
+                        shotTriggered = true;
+                    }else if(shotTriggered && !launcher.isBusy()){
+                        follower.followPath(grabPickup2p1, true);
+                        transfer.inhale_off();
+                        setPathState(5);
+                        shotTriggered = false;
+                        actionTimer.resetTimer();
+                        hammer.setLeft();
+                    }
+                }
+                break;
+            case 5:
+                if(!follower.isBusy()) {
+                    transfer.inhale_on();
+                    follower.followPath(grabPickup2p2, true);
+                    setPathState(6);
+                }
+                break;
+            case 6:
+                if(!follower.isBusy()) {
+                    follower.followPath(scorePickup2, true);
+                    setPathState(7);
+                }
+                break;
+            case 7:
+                if(!follower.isBusy()) {
+                    if(tagNumber != 22){
+                        transfer.inhale_on();
+                    }else if(launcher.currentRemainingShot() < 2){
+                        transfer.inhale_on();
+                    }
+                    if(!shotTriggered){
+                        launcher.shoot(3, pattern, tagNumber);
+                        shotTriggered = true;
+                    }else if(shotTriggered && !launcher.isBusy()){
+                        follower.followPath(endPath, true);
+                        transfer.inhale_off();
+                        setPathState(10);
+                        shotTriggered = false;
+                        hammer.setRight();
+                        actionTimer.resetTimer();
+                    }
+                }
+                break;
+            case 8:
+                break;
+
         }
     }
     //this is what you use to update the desired state

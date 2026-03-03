@@ -41,5 +41,12 @@ public class Hammer {
         this.openPosition = openPosition;
     }
 
+    public void slap(){
+        if(hammer.getPosition() == LEFT_POSITION){
+            hammer.setPosition(RIGHT_POSITION);
+        }else{
+            hammer.setPosition(LEFT_POSITION);
+        }
+    }
 
 }
