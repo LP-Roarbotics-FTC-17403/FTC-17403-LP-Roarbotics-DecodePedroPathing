@@ -168,16 +168,14 @@ public class Red_Far_Preload_Fishing extends OpMode {
             case 0:
                 opmodeTimer.resetTimer();
                 follower.followPath(scorePreload,true);
+                rightGate.setPosition(RIGHT_OPEN_POSITION);
+                leftGate.setPosition(LEFT_OPEN_POSITION);
                 setPathState(1);
                 break;
             case 1:
                 /* This case checks the robot's position and will wait until the robot position is close (1 inch away) from the pickup1Pose's position */
                 if(!follower.isBusy()) {
-                    if(tagNumber != 22){
-                        transfer.inhale_on();
-                    }else if(launcher.currentRemainingShot() < 2){
-                        transfer.inhale_on();
-                    }
+                    transfer.inhale_on();
                     if(!shotTriggered){
                         launcher.shoot(3);
                         shotTriggered = true;
@@ -195,7 +193,6 @@ public class Red_Far_Preload_Fishing extends OpMode {
                     if (actionTimer.getElapsedTimeSeconds() > 1) {
                         follower.followPath(grabPickup1p2, true);
                         setPathState(3);
-                        distance.divertLeft();
                     }
                 }
                 break;
@@ -209,18 +206,16 @@ public class Red_Far_Preload_Fishing extends OpMode {
                 break;
             case 4:
                 if(!follower.isBusy()) {
-                    if(tagNumber != 22){
-                        transfer.inhale_on();
-                    }else if(launcher.currentRemainingShot() < 2){
-                        transfer.inhale_on();
-                    }
+                    transfer.inhale_on();
                     if(!shotTriggered){
                         launcher.shoot(3);
                         shotTriggered = true;
                     }else if(shotTriggered && !launcher.isBusy()){
                         follower.followPath(grabPickup2p1, true);
                         distance.startDetect();
-                        transfer.inhale_off();
+                        rightGate.setPosition(RIGHT_CLOSE_POSITION);
+                        leftGate.setPosition(LEFT_CLOSE_POSITION);
+                        transfer.inhale_on();
                         setPathState(5);
                         shotTriggered = false;
                         actionTimer.resetTimer();
@@ -254,12 +249,9 @@ public class Red_Far_Preload_Fishing extends OpMode {
                 break;
             case 7:
                 if(!follower.isBusy()) {
-                    if(tagNumber != 22){
-                        transfer.inhale_on();
-                    }else if(launcher.currentRemainingShot() < 2){
-                        transfer.inhale_on();
-                    }
                     if(!shotTriggered){
+                        rightGate.setPosition(RIGHT_OPEN_POSITION);
+                        leftGate.setPosition(LEFT_OPEN_POSITION);
                         launcher.shoot(3);
                         shotTriggered = true;
                     }else if(shotTriggered && !launcher.isBusy()){

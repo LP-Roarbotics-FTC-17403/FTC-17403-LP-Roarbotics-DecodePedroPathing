@@ -61,13 +61,13 @@ public class LauncherStateMachine {
         leftFeeder.setDirection(DcMotorSimple.Direction.REVERSE);
         leftLauncher.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         leftLauncher.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        leftLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+        leftLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(390, 0, 0, 14.4)); // 300 0 0 10
         leftLauncher.setDirection(DcMotorSimple.Direction.FORWARD);
         leftLauncher.setPower(0);
 
         rightLauncher.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         rightLauncher.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
-        rightLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 0, 0, 10));
+        rightLauncher.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(390, 0, 0, 14.4));
         rightLauncher.setDirection(DcMotorSimple.Direction.REVERSE);
         rightLauncher.setPower(0);
 

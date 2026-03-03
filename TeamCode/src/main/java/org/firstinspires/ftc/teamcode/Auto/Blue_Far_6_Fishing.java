@@ -170,6 +170,8 @@ public class Blue_Far_6_Fishing extends OpMode {
             case 0:
                 opmodeTimer.resetTimer();
                 follower.followPath(scorePreload,true);
+                rightGate.setPosition(RIGHT_OPEN_POSITION);
+                leftGate.setPosition(LEFT_OPEN_POSITION);
                 setPathState(1);
                 break;
             case 1:
@@ -222,7 +224,9 @@ public class Blue_Far_6_Fishing extends OpMode {
                     }else if(shotTriggered && !launcher.isBusy()){
                         follower.followPath(grabPickup2p1, true);
                         distance.startDetect();
-                        transfer.inhale_off();
+                        transfer.inhale_on();
+                        rightGate.setPosition(RIGHT_CLOSE_POSITION);
+                        leftGate.setPosition(LEFT_CLOSE_POSITION);
                         setPathState(5);
                         shotTriggered = false;
                         actionTimer.resetTimer();
@@ -232,7 +236,6 @@ public class Blue_Far_6_Fishing extends OpMode {
                 break;
             case 5:
                 if(!follower.isBusy()) {
-                    transfer.inhale_on();
                     if(distance.loaded() || opmodeTimer.getElapsedTimeSeconds() > 23){
                         follower.followPath(oneScorePickup2, true);
                         setPathState(7);
@@ -256,12 +259,9 @@ public class Blue_Far_6_Fishing extends OpMode {
                 break;
             case 7:
                 if(!follower.isBusy()) {
-                    if(tagNumber != 22){
-                        transfer.inhale_on();
-                    }else if(launcher.currentRemainingShot() < 2){
-                        transfer.inhale_on();
-                    }
                     if(!shotTriggered){
+                        leftGate.setPosition(LEFT_OPEN_POSITION);
+                        rightGate.setPosition(RIGHT_OPEN_POSITION);
                         launcher.shoot(3);
                         shotTriggered = true;
                     }else if(shotTriggered && !launcher.isBusy()){
